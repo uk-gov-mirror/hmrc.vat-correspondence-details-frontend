@@ -48,11 +48,13 @@ class AuthPredicate @Inject()(enrolmentsAuthService: EnrolmentsAuthService,
   override def invokeBlock[A](request: Request[A], block: User[A] => Future[Result]): Future[Result] = {
 
     implicit val req: Request[A] = request
+    val agentAccessAllowed: Boolean = !appConfig.agentBlockedUrls.contains(req.uri)
+
     enrolmentsAuthService.authorised().retrieve(v2.Retrievals.affinityGroup and v2.Retrievals.allEnrolments) {
       case Some(affinityGroup) ~ allEnrolments =>
         (isAgent(affinityGroup), allEnrolments) match {
           case (true, enrolments) =>
-            if (appConfig.features.agentAccessEnabled()) {
+            if (appConfig.features.agentAccessEnabled() && agentAccessAllowed) {
               checkAgentEnrolment(enrolments, block)
             } else {
               Future.successful(Unauthorized(agentJourneyDisabledView()))
