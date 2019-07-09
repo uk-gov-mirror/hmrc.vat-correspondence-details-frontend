@@ -31,19 +31,22 @@ import views.html.errors.agent.{AgentJourneyDisabledView, UnauthorisedAgentView}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AuthPredicate @Inject()(enrolmentsAuthService: EnrolmentsAuthService,
-                              override val mcc: MessagesControllerComponents,
-                              val errorHandler: ErrorHandler,
-                              val authenticateAsAgentWithClient: AuthoriseAsAgentWithClient,
-                              sessionTimeoutView: SessionTimeoutView,
-                              agentJourneyDisabledView: AgentJourneyDisabledView,
-                              unauthorisedAgentView: UnauthorisedAgentView,
-                              notSignedUpView: NotSignedUpView,
-                              implicit val appConfig: AppConfig,
-                              override implicit val executionContext: ExecutionContext)
-  extends AuthBasePredicate(mcc) with ActionBuilder[User, AnyContent] with ActionFunction[Request, User] {
+class AuthPredicate @Inject()(authPredicateComponents: AuthPredicateComponents, allowsAgents: Boolean)
+  extends AuthBasePredicate(authPredicateComponents.mcc) with ActionBuilder[User, AnyContent] with ActionFunction[Request, User] {
 
   override val parser: BodyParser[AnyContent] = mcc.parsers.defaultBodyParser
+
+  implicit val appConfig: AppConfig = authPredicateComponents.appConfig
+  implicit val executionContext: ExecutionContext = authPredicateComponents.executionContext
+
+  val enrolmentsAuthService: EnrolmentsAuthService = authPredicateComponents.enrolmentsAuthService
+  val agentJourneyDisabledView: AgentJourneyDisabledView = authPredicateComponents.agentJourneyDisabledView
+  val unauthorisedAgentView: UnauthorisedAgentView = authPredicateComponents.unauthorisedAgentView
+  val sessionTimeoutView: SessionTimeoutView = authPredicateComponents.sessionTimeoutView
+  val notSignedUpView: NotSignedUpView = authPredicateComponents.notSignedUpView
+  val errorHandler: ErrorHandler = authPredicateComponents.errorHandler
+  val authenticateAsAgentWithClient: AuthoriseAsAgentWithClient = authPredicateComponents.authenticateAsAgentWithClient
+
 
   override def invokeBlock[A](request: Request[A], block: User[A] => Future[Result]): Future[Result] = {
 

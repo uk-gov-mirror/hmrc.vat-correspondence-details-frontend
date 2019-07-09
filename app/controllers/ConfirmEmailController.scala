@@ -21,7 +21,7 @@ import audit.AuditingService
 import audit.models.ChangedEmailAddressAuditModel
 import common.SessionKeys.{emailKey, inFlightContactDetailsChangeKey, validationEmailKey}
 import config.{AppConfig, ErrorHandler}
-import controllers.predicates.{AuthPredicate, InFlightPPOBPredicate}
+import controllers.predicates.{AuthPredicate, AuthPredicateComponents, InFlightPPOBPredicate}
 import models.User
 import models.customerInformation.UpdateEmailSuccess
 import models.errors.ErrorModel
@@ -33,7 +33,7 @@ import views.html.ConfirmEmailView
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ConfirmEmailController @Inject()(val authenticate: AuthPredicate,
+class ConfirmEmailController @Inject()(val authPredicateComponents: AuthPredicateComponents,
                                        val inflightCheck: InFlightPPOBPredicate,
                                        override val mcc: MessagesControllerComponents,
                                        val errorHandler: ErrorHandler,
@@ -43,6 +43,8 @@ class ConfirmEmailController @Inject()(val authenticate: AuthPredicate,
                                        implicit val appConfig: AppConfig) extends BaseController(mcc) {
 
   implicit val ec: ExecutionContext = mcc.executionContext
+
+  val authenticate: AuthPredicate = new AuthPredicate(authPredicateComponents, true)
 
   def show: Action[AnyContent] = (authenticate andThen inflightCheck).async { implicit user =>
 

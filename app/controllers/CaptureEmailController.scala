@@ -20,7 +20,7 @@ import audit.AuditingService
 import audit.models.AttemptedEmailAddressAuditModel
 import common.SessionKeys
 import config.{AppConfig, ErrorHandler}
-import controllers.predicates.{AuthPredicate, InFlightPPOBPredicate}
+import controllers.predicates.{AuthPredicate, AuthPredicateComponents, InFlightPPOBPredicate}
 import forms.EmailForm._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
@@ -30,7 +30,7 @@ import views.html.CaptureEmailView
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CaptureEmailController @Inject()(val authenticate: AuthPredicate,
+class CaptureEmailController @Inject()(val authPredicateComponents: AuthPredicateComponents,
                                        val inflightCheck: InFlightPPOBPredicate,
                                        override val mcc: MessagesControllerComponents,
                                        val vatSubscriptionService: VatSubscriptionService,
@@ -40,6 +40,8 @@ class CaptureEmailController @Inject()(val authenticate: AuthPredicate,
                                        implicit val appConfig: AppConfig) extends BaseController(mcc) {
 
   implicit val ec: ExecutionContext = mcc.executionContext
+
+  val authenticate: AuthPredicate = new AuthPredicate(authPredicateComponents, true)
 
   def show: Action[AnyContent] = (authenticate andThen inflightCheck).async { implicit user =>
     val validationEmail: Future[Option[String]] = user.session.get(SessionKeys.validationEmailKey) match {
