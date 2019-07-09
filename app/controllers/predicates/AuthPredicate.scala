@@ -30,7 +30,6 @@ import views.html.errors.agent.{AgentJourneyDisabledView, UnauthorisedAgentView}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@Singleton
 class AuthPredicate @Inject()(authPredicateComponents: AuthPredicateComponents, allowsAgents: Boolean)
   extends AuthBasePredicate(authPredicateComponents.mcc) with ActionBuilder[User, AnyContent] with ActionFunction[Request, User] {
 
