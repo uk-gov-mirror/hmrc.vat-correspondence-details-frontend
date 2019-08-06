@@ -40,3 +40,7 @@ GET         /update-remove-website-address     controllers.website.ConfirmRemove
 # capture telephone numbers
 GET         /new-telephone-numbers             controllers.contactNumbers.CaptureContactNumbersController.show
 POST        /new-telephone-numbers             controllers.contactNumbers.CaptureContactNumbersController.submit
+
+# confirm phone numbers
+GET         /confirm-new-telephone-numbers     controllers.contactNumbers.ConfirmPhoneNumbersController.show
+POST        /confirm-new-telephone-numbers     controllers.contactNumbers.ConfirmPhoneNumbersController.updatePhoneNumbers
